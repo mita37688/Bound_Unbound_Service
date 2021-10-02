@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isServiceConnected;
     private MusicService musicService;
-    private ImageView btnPlay, btnStartService, btnStopService, imgSong;
+    private ImageView btnPlay, btnStopService, imgSong;
     private Animation animation;
     private SeekBar timeLine;
     private TextView tvTimePlay, tvTimeOut;
@@ -47,59 +47,65 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(MainActivity.this, MusicService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(isServiceConnected){
+            unbindService(serviceConnection);
+            isServiceConnected = false;
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         btnPlay = findViewById(R.id.btnPlay);
-        btnStartService = findViewById(R.id.btnPlayService);
         btnStopService = findViewById(R.id.btnBack);
         imgSong = findViewById(R.id.img_song);
         timeLine = findViewById(R.id.timeLine);
         tvTimePlay = findViewById(R.id.timePlay);
         tvTimeOut = findViewById(R.id.timeOut);
 
-        btnPlay.setVisibility(View.INVISIBLE);
-
         animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.anirotate);
 
-        btnStartService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onClickStartService();
-            }
-        });
-
-        btnStopService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onClickStopService();
-            }
-        });
+//        btnStopService.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                onClickStopService();
+//            }
+//        });
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(musicService.isPlaying()) {
-                    musicService.pauseMusic();
-                    btnPlay.setImageResource(R.drawable.ic_play);
-                    imgSong.clearAnimation();
-                }else{
-                    musicService.resumeMusic();
-                    btnPlay.setImageResource(R.drawable.ic_pause);
-                    imgSong.startAnimation(animation);
+                if(isServiceConnected){
+                    if(musicService.isPlaying()) {
+                        musicService.pauseMusic();
+                        btnPlay.setImageResource(R.drawable.ic_play);
+                        imgSong.clearAnimation();
+                    }else{
+                        musicService.playMusic();
+                        btnPlay.setImageResource(R.drawable.ic_pause);
+                        imgSong.startAnimation(animation);
+                    }
+                    Time();
+                    TimeOut();
                 }
-
-                Time();
-                TimeOut();
             }
         });
 
         timeLine.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                if(musicService.getMediaPlayer() != null && fromUser)
-//                    musicService.getMediaPlayer().seekTo(progress * 1000);
+
             }
 
             @Override
@@ -114,39 +120,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void onClickStartService() {
-        Intent intent = new Intent(this, MusicService.class);
-
-        Song song = new Song("Trắc trở", R.raw.tractro);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("object_song", song);
-        intent.putExtras(bundle);
-
-        startService(intent);
-
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-
-        btnPlay.setImageResource(R.drawable.ic_pause);
-        btnPlay.setVisibility(View.VISIBLE);
-        btnStartService.setVisibility(View.GONE);
-
-        imgSong.startAnimation(animation);
-    }
-
-    private void onClickStopService() {
-        Intent intent = new Intent(this, MusicService.class);
-        stopService(intent);
-
-        if(isServiceConnected){
-            unbindService(serviceConnection);
-            isServiceConnected = false;
-        }
-
-        btnPlay.setVisibility(View.INVISIBLE);
-        btnStartService.setVisibility(View.VISIBLE);
-
-        imgSong.clearAnimation();
-    }
+//    private void onClickStopService() {
+//        Intent intent = new Intent(this, MusicService.class);
+//        stopService(intent);
+//
+//        if(isServiceConnected){
+//            unbindService(serviceConnection);
+//            isServiceConnected = false;
+//        }
+//
+//        btnPlay.setVisibility(View.INVISIBLE);
+//        btnStartService.setVisibility(View.VISIBLE);
+//
+//        imgSong.clearAnimation();
+//    }
 
     private void TimeOut(){
         SimpleDateFormat format = new SimpleDateFormat("mm:ss");
@@ -166,8 +153,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
                         imgSong.clearAnimation();
-                        btnPlay.setVisibility(View.INVISIBLE);
-                        btnStartService.setVisibility(View.VISIBLE);
+                        btnPlay.setImageResource(R.drawable.ic_play);
                         Time();
                         TimeOut();
                     }
