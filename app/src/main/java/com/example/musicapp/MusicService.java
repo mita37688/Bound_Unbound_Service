@@ -55,4 +55,8 @@ public class MusicService extends Service {
     public void pauseMusic() {
         mediaPlayer.pause();
     }
+
+    public void skipMusic(int pos){
+        mediaPlayer.seekTo(pos);
+    }
 }

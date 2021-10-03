@@ -17,6 +17,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isServiceConnected;
     private MusicService musicService;
-    private ImageView btnPlay, btnStopService, imgSong;
+    private ImageView btnPlay, btnStopService, imgSong, btnSkip, btnReturn;
     private Animation animation;
     private SeekBar timeLine;
     private TextView tvTimePlay, tvTimeOut;
@@ -52,12 +53,36 @@ public class MainActivity extends AppCompatActivity {
 
         btnPlay = findViewById(R.id.btnPlay);
         btnStopService = findViewById(R.id.btnBack);
+        btnSkip = findViewById(R.id.btnSkip);
+        btnReturn = findViewById(R.id.btnReturn);
         imgSong = findViewById(R.id.img_song);
         timeLine = findViewById(R.id.timeLine);
         tvTimePlay = findViewById(R.id.timePlay);
         tvTimeOut = findViewById(R.id.timeOut);
 
         animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.anirotate);
+
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isServiceConnected){
+                    musicService.skipMusic(musicService.getMediaPlayer().getCurrentPosition() - 5000);
+                }else{
+                    Toast.makeText(MainActivity.this, "Service chưa hoạt động", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isServiceConnected){
+                    musicService.skipMusic(musicService.getMediaPlayer().getCurrentPosition() + 10000);
+                }else{
+                    Toast.makeText(MainActivity.this, "Service chưa hoạt động", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         btnStopService.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -146,6 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 });
                 handler.postDelayed(this, 500);
             }
-        }, 100);
+        }, 10);
     }
 }
