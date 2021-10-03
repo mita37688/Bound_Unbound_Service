@@ -38,29 +38,12 @@ public class MainActivity extends AppCompatActivity {
             Time();
             TimeOut();
         }
-
         @Override
         public void onServiceDisconnected(ComponentName name) {
             musicService = null;
             isServiceConnected = false;
         }
     };
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Intent intent = new Intent(MainActivity.this, MusicService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if(isServiceConnected){
-            unbindService(serviceConnection);
-            isServiceConnected = false;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,12 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
         animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.anirotate);
 
-//        btnStopService.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                onClickStopService();
-//            }
-//        });
+        btnStopService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickStopService();
+            }
+        });
+
+        final Intent intent = new Intent(MainActivity.this, MusicService.class);
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Time();
                     TimeOut();
+                }else{
+                    bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+                    btnPlay.setImageResource(R.drawable.ic_pause);
+                    imgSong.startAnimation(animation);
                 }
             }
         });
@@ -120,20 +109,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-//    private void onClickStopService() {
-//        Intent intent = new Intent(this, MusicService.class);
-//        stopService(intent);
-//
-//        if(isServiceConnected){
-//            unbindService(serviceConnection);
-//            isServiceConnected = false;
-//        }
-//
-//        btnPlay.setVisibility(View.INVISIBLE);
-//        btnStartService.setVisibility(View.VISIBLE);
-//
-//        imgSong.clearAnimation();
-//    }
+    private void onClickStopService() {
+        if(musicService.isPlaying()){
+            unbindService(serviceConnection);
+            isServiceConnected = false;
+            btnPlay.setImageResource(R.drawable.ic_play);
+            imgSong.clearAnimation();
+        }else{
+            unbindService(serviceConnection);
+            isServiceConnected = false;
+        }
+    }
 
     private void TimeOut(){
         SimpleDateFormat format = new SimpleDateFormat("mm:ss");

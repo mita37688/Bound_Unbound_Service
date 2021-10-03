@@ -29,17 +29,19 @@ public class MusicService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        mediaPlayer.start();
         return myBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        mediaPlayer.stop();
         return super.onUnbind(intent);
     }
 
     @Override
     public void onDestroy() {
-        mediaPlayer.release();
+        mediaPlayer.reset();
     }
 
     public boolean isPlaying() {
